@@ -1,0 +1,86 @@
+####################################################################################################
+Flow Log Processing Application
+Overview
+This is a flow log processing application that takes flow logs as input and processes them to generate
+protocol and port combinations, along with associated tagging data. The application is designed to load configuration properties, error logs, protocol mappings, and lookup table data from CSV files, orchestrate the processing workflow, and output the processed results.
+
+Features
+Protocol Mapping: Maps protocol numbers to their respective names based on a CSV reference file.
+Tagging Support: If a lookup table is provided, it allows tagging of protocol-port combinations.
+Error Logging: Logs any errors encountered during file operations or invalid protocol numbers.
+Port-Protocol Counting: Keeps track of port-protocol combinations and provides an output summary.
+
+Assumptions
+Supported Log Format: The program only supports a default log format and does not support custom formats.
+Supported Version: The program is compatible with version 2 of the log format and can also work with later
+                    versions if only of the 6 and 7th entries are port and protocol respectively. Data is space separated not comma.
+Protocol Range: Only protocol numbers between 0 and 255 are considered valid. https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+CSV Structure: The protocol and lookup table CSV files are assumed to have well-structured, valid data.
+Any invalid rows (e.g., missing columns) are ignored and logged as warnings. (Considering dirty data even though its a rare to non occurring)
+Tagging Data: If the lookup table file is missing, the program will still run, but the tagging information
+will not be processed, and a corresponding error will be logged. We will still count port/protocol count since it does not depend on lookup table.
+For the lookup table, it is assumed that only keywords are used for protocols. Protocols without a keyword do not exist in the lookup table.
+Error Logging: The error logger is initialized with a path from the properties file. If any line in flow log is not processed then that information will also be recorded.
+
+Project Structure
+src
+│
+├── com/illumio/flowlog/
+│   ├── exceptions/          # Custom exception classes (InvalidProtocolNumberException, MissingMandatoryFileException, etc.)
+│   ├── fileloaders/         # Classes for loading protocol names/number and lookup table data
+│   ├── loggers/             # ErrorLogger for logging errors to a file
+│   ├── orchestrate/         # Main orchestration logic for port and protocol processing
+│   ├── processor/           # FlowLogProcessor for reading flow logs and generating outputs
+│   ├── setup/               # Configuration loading classes (CustomProperties)
+│   └── utilities/           # Utility class Constants
+└── Main.java               # Entry point for the application
+Dependencies
+Java Version: Requires Java 8 or later.
+Logging: Utilizes Java's built-in java.util.logging.Logger.
+
+Installation and Setup
+Compilation
+1. Clone the repository
+2. Configure the config.properties file:
+   - In the config.properties file, please provide the file paths for the following:
+     properties
+     flowlog.path= Path to the lookup table CSV file
+     lookup.table.path=Path where the output CSV file will be saved
+     protocol.number.path= Path to the flow log text file
+     output.file.path=Path to the protocol numbers CSV file, which can be downloaded from IANA Protocol Numbers.
+     error.file.path=Path where the error log will be recorded.
+   - Make sure these paths are not empty. While exceptions for file existence are handled, missing data in the properties file
+     can cause a `NullPointerException` as the `getProperty` method will return a null value.
+2. Compile the project
+3. Run the programme
+
+Testing
+
+The application has been tested with the following scenarios:
+
+- Valid Flow Log Files**: Tested with flow log files containing existing protocol and port mappings to ensure accurate processing and output generation.
+
+- Missing Files**: Verified the application's error handling by intentionally omitting required files. The application correctly logs errors to the error log file.
+
+- Invalid Protocol Numbers**: Tested the application with invalid protocol numbers to ensure that exceptions are thrown as expected and are logged appropriately.
+
+To conduct testing, I used extensive logging instead of external libraries like JUnit, which are not allowed. I implemented a strategy to generate different types of errors and confirmed that they are recorded in the error logs.
+This approach ensures that any issues encountered during execution are tracked and can be reviewed in the error log file.
+
+For example: Although its rare what if there is dirty data in flow log file
+So, error log will capture line likes these and then we can review.
+Skipping Line because flow log is not in correct format || 2 123456789012 eni-1a2b3c4d 192.168.0.1 203.0.113.12 ||
+Skipping Line because of port or protocol are not integer || 2 123456789012 eni-4h5i6j7k 172.16.0.2 192.0.2.146 49154 ABS 44 9 4500 1620140661 1620140721 ACCEPT OK||
+Skipping Line because of port or protocol are not integer || 2 123456789012 eni-4h5i6j7k 172.16.0.2 192.0.2.146 49154 143 C 9 4500 1620140661 1620140721 ACCEPT OK||
+
+To test the counting functionality, I generated different pairs of combinations and tested them with smaller inputs across various scenarios and edge cases to ensure the system is robust.
+
+Empty Flow Log File: An empty flow log file results in an empty output file.
+
+Empty Lookup Table File: When the lookup table file is empty, the output indicates that "Untagged" equals the number of flow log lines.
+
+Protocol Numbers 146 to 242: These protocol numbers do not contain associated keywords, so they are not used for tagging. Instead, the application counts these entries for the port-protocol count and uses the protocol number itself in the output since keyword information is not present.
+
+Case Sensitivity for Keywords: Keywords are unique regardless of case; thus, the case for keywords from the lookup table and protocol numbers is maintained consistently.
+
+
