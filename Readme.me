@@ -11,7 +11,7 @@ Error Logging: Logs any errors encountered during file operations or invalid pro
 Port-Protocol Counting: Keeps track of port-protocol combinations and provides an output summary.
 
 Assumptions
-Supported Log Format: The program only supports a default log format and does not support custom formats.
+Supported Log Format: The program only supports a default log format and does not support custom formats. https://docs.aws.amazon.com/vpc/latest/userguide/flow-log-records.html The Exact format is described here since we are not validating the whole log.
 Supported Version: The program is compatible with version 2 of the log format and can also work with later
                     versions if only of the 6 and 7th entries are port and protocol respectively. Data is space separated not comma.
 Protocol Range: Only protocol numbers between 0 and 255 are considered valid. https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
