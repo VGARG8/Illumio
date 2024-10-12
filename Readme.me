@@ -31,6 +31,7 @@ src
 │   ├── loggers/             # ErrorLogger for logging errors to a file
 │   ├── orchestrate/         # Main orchestration logic for port and protocol processing
 │   ├── processor/           # FlowLogProcessor for reading flow logs and generating outputs
+|   ├── trackers/           # Trackers(TaggingTracker and PortProtocolTracker are responsible for maintaining the counts
 │   ├── setup/               # Configuration loading classes (CustomProperties)
 │   └── utilities/           # Utility class Constants
 └── Main.java               # Entry point for the application
@@ -45,10 +46,10 @@ Compilation
 2. Configure the config.properties file:
    - In the config.properties file, please provide the file paths for the following:
      properties
-     flowlog.path= Path to the lookup table CSV file
-     lookup.table.path=Path where the output CSV file will be saved
-     protocol.number.path= Path to the flow log text file
-     output.file.path=Path to the protocol numbers CSV file, which can be downloaded from IANA Protocol Numbers.
+     flowlog.path= Path to the flow log text file
+     lookup.table.path= Path to the lookup table CSV file
+     protocol.number.path= Path to the protocol numbers CSV file, which can be downloaded from IANA Protocol Numbers.
+     output.file.path= Path where the output text file will be saved
      error.file.path=Path where the error log will be recorded.
    - Make sure these paths are not empty. While exceptions for file existence are handled, missing data in the properties file
      can cause a `NullPointerException` as the `getProperty` method will return a null value.
